@@ -1,0 +1,28 @@
+<resources>
+
+    <string-array name="appearance_entries">
+        <item>Device default</item>
+        <item>Dark mode</item>
+        <item>Light mode</item>
+    </string-array>
+
+    <string-array name="appearance_values">
+        <item>device_default</item>
+        <item>dark_mode</item>
+        <item>light_mode</item>
+    </string-array>
+
+    <string-array name="sort_by_entries">
+        <item>Newest</item>
+        <item>Oldest</item>
+        <item>A-Z (Ascending)</item>
+        <item>Z-A (Descending)</item>
+    </string-array>
+
+    <string-array name="sort_by_values">
+        <item>sort_by_new</item>
+        <item>sort_by_old</item>
+        <item>sort_by_name_ascending</item>
+        <item>sort_by_name_descending</item>
+    </string-array>
+</resources>

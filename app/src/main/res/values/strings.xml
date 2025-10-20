@@ -1,0 +1,46 @@
+<resources>
+    <string name="app_name">Call Recorder</string>
+    <string name="not_system_app_message_title">App is not a system app.</string>
+    <string name="not_system_app_message_body">After Android 9 or greater, it is not possible to record calls by using third party apps. So that\'s why you have to manually make this app as a system app. If you don\'t know how to make a third party app to system app, then you should read this tutorial post.</string>
+    <string name="tutorial_post_link">https://www.droidwin.com/how-to-convert-any-android-app-to-system-app/</string>
+    <string name="header_layout_sub_text">Call Recorder</string>
+    <string name="app_sharing_message">"Best automatic call recorder ever. Download it from GitHub now. "</string>
+    <string name="report_issue_text">Something went wrong. Please report this issue.</string>
+    <string name="github_release_page_link">https://github.com/Benojir/Android-Call-Recorder/releases</string>
+    <string name="app_issue_page_link">https://github.com/Benojir/Android-Call-Recorder/issues/</string>
+    <string name="more_apps_in_play_store">https://play.google.com/store/search?q=pub: Creative Papa&amp;c=apps</string>
+    <string name="website_link">https://benojir.github.io/portfolio</string>
+    <string name="github_profile_link">https://github.com/Benojir</string>
+    <string name="telegram_link">https://telegram.me/CreativePapa</string>
+    <string name="app_info_page_opening_failed_message">Failed to open application setting info page. Please open app info page and allow all permissions manually from settings.</string>
+    <string name="select">Select</string>
+    <string name="play_with">Play with</string>
+    <string name="share">Share</string>
+    <string name="rename">Rename</string>
+    <string name="delete">Delete</string>
+    <string name="info">Info</string>
+    <string name="properties">Properties</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
+    <string name="share_selected">Share</string>
+    <string name="delete_selected">Delete</string>
+    <string name="unknown">Unknown</string>
+    <string name="app_version">"Version: "</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="call_recording_title">Call recording</string>
+    <string name="call_recording_summary_on">Calls will be recorded automatically</string>
+    <string name="call_recording_summary_off">Calls will not be recorded automatically</string>
+    <string name="general_header">General</string>
+    <string name="start_toast">Start toast</string>
+    <string name="start_toast_summary_on">A toast will be shown when recording will be started</string>
+    <string name="start_toast_summary_off">No toast will be shown when recording started</string>
+    <string name="saved_toast">Saved toast</string>
+    <string name="saved_toast_summary_on">A toast will be shown when recording saved</string>
+    <string name="saved_toast_summary_off">No toast will be shown when recording saved</string>
+    <string name="appearance_title">Appearance</string>
+    <string name="theme_title">Theme</string>
+    <string name="sort_by_title">Sort by</string>
+    <string name="recording_header">Recorder</string>
+    <string name="version_check_url">https://raw.githubusercontent.com/Benojir/Android-Call-Recorder/main/magisk/updates/release/info.json</string>
+    <string name="compose_shortcut_label_for_settings">Settings</string>
+</resources>

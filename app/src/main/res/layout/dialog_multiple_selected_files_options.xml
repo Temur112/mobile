@@ -1,0 +1,74 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/selectAllOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_all"
+        android:textColor="?attr/textColor"
+        android:layout_gravity="center_vertical"
+        android:textSize="18sp"
+        app:drawableStartCompat="@drawable/select_all_24"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:drawablePadding="10dp"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/deselectAllOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/deselect_all"
+        android:textColor="?attr/textColor"
+        android:layout_gravity="center_vertical"
+        android:textSize="18sp"
+        app:drawableStartCompat="@drawable/deselect_24"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:drawablePadding="10dp"/>
+
+    <TextView
+        android:id="@+id/shareAllOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/share_selected"
+        android:textColor="?attr/textColor"
+        android:layout_gravity="center_vertical"
+        android:textSize="18sp"
+        app:drawableStartCompat="@drawable/share_24"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:drawablePadding="10dp"/>
+
+    <TextView
+        android:id="@+id/deleteAllOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/delete_selected"
+        android:textColor="?attr/textColor"
+        android:layout_gravity="center_vertical"
+        android:textSize="18sp"
+        app:drawableStartCompat="@drawable/delete_24"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:drawablePadding="10dp"
+        android:layout_marginBottom="10dp"/>
+
+</LinearLayout>

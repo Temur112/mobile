@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <item android:title="Feedback"
+        tools:ignore="HardcodedText">
+        <menu>
+            <item
+                android:id="@+id/send_mail_action"
+                android:title="Report Bugs"
+                android:icon="@android:drawable/ic_dialog_email"/>
+        </menu>
+    </item>
+    <item android:title="Support Us"
+        tools:ignore="HardcodedText">
+        <menu>
+            <item
+                android:id="@+id/share_app_action"
+                android:title="Share"
+                android:icon="@drawable/share_24"/>
+
+            <item
+                android:id="@+id/more_app_action"
+                android:title="More Apps"
+                android:icon="@android:drawable/stat_notify_more"/>
+        </menu>
+    </item>
+    <item android:title="Follow Me"
+        tools:ignore="HardcodedText">
+        <menu>
+            <item
+                android:id="@+id/visitWeb_app_action"
+                android:title="Website"
+                android:icon="@drawable/browser_icon"/>
+
+            <item
+                android:id="@+id/visitGitHub_app_action"
+                android:title="GitHub"
+                android:icon="@drawable/github"/>
+
+            <item
+                android:id="@+id/visitTG_app_action"
+                android:title="Telegram"
+                android:icon="@drawable/telegram"/>
+        </menu>
+
+    </item>
+
+</menu>
