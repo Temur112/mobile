@@ -336,8 +336,9 @@ public class MainActivity extends AppCompatActivity {
 
             Intent intent;
 
-            if (item.getItemId() == R.id.send_mail_action) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.app_issue_page_link))));
+            if (item.getItemId() == R.id.nav_sms_list) {
+                intent = new Intent(MainActivity.this, SmsListActivity.class);
+                startActivity(intent);
                 return true;
 
             } else if (item.getItemId() == R.id.share_app_action) {
@@ -371,7 +372,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
 
-            } else {
+            } else if (item.getItemId() == R.id.nav_sms_list) {
+                intent = new Intent(MainActivity.this, SmsListActivity.class);
+                startActivity(intent);
+                return true;
+            }else {
                 return false;
             }
         });

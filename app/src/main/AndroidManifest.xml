@@ -64,6 +64,9 @@
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
+        <activity android:name=".activities.SmsListActivity"
+            android:exported="true"
+            android:label="Saved SMS" />
         <activity
             android:name=".activities.LoginActivity"
             android:exported="true"

@@ -7,8 +7,8 @@
         tools:ignore="HardcodedText">
         <menu>
             <item
-                android:id="@+id/send_mail_action"
-                android:title="Report Bugs"
+                android:id="@+id/nav_sms_list"
+                android:title="SMS List"
                 android:icon="@android:drawable/ic_dialog_email"/>
         </menu>
     </item>
