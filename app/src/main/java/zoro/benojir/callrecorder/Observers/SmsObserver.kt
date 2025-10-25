@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
+import android.util.Log
 import zoro.benojir.callrecorder.helpers.SmsUploadHelper
 
 class SmsObserver(
@@ -18,7 +19,7 @@ class SmsObserver(
 
     override fun onChange(selfChange: Boolean) {
         super.onChange(selfChange)
-
+        Log.i("SmsObserver", "onChange: ")
         val cursor = context.contentResolver.query(
             uri,
             arrayOf(Telephony.Sms._ID, Telephony.Sms.ADDRESS, Telephony.Sms.BODY),
@@ -32,6 +33,7 @@ class SmsObserver(
                     lastSmsId = id
                     val address = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
                     val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
+                    Log.d("SMSTTT", "onChange: $body")
                     SmsUploadHelper.enqueueSmsUpload(context, address, body)
                 }
             }

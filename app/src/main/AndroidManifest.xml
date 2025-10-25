@@ -74,6 +74,11 @@
                 <action android:name="NO" />
             </intent-filter>
         </receiver>
+        <service android:name=".services.SmsObserverService"
+            android:enabled="true"
+            android:exported="true">
+
+        </service>
         <receiver
             android:name=".receivers.SmsReceiver"
             android:enabled="true"

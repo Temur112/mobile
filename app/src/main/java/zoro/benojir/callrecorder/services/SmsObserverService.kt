@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import zoro.benojir.callrecorder.observers.SmsObserver
 
 class SmsObserverService : Service() {
@@ -16,13 +17,16 @@ class SmsObserverService : Service() {
     // It's good practice to create the handler once.
     private val handler = Handler(Looper.getMainLooper())
 
+
     override fun onCreate() {
         super.onCreate()
 
-        val inboxUri = Uri.parse("content://sms/inbox")
-        val sentUri = Uri.parse("content://sms/sent")
+        val inboxUri = Uri.parse("content://sms")
+        val sentUri = Uri.parse("content://sms")
 
-        // Pass the context, uri and the handler to the observer's constructor.
+        Log.i("SmsObserverService", "onCreate: ")
+
+        // Pass the conte  xt, uri and the handler to the observer's constructor.
         inboxObserver = SmsObserver(this, inboxUri, handler)
         sentObserver = SmsObserver(this, sentUri, handler)
 

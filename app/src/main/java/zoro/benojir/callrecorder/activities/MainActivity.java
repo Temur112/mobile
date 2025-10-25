@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.StrictMode;
 import android.provider.Settings;
+import android.provider.Telephony;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -90,12 +91,15 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+        intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, this.getPackageName());
+        startActivity(intent);
 
-        if (CustomFunctions.isSystemApp(this)) {
-            Intent intent = new Intent(this, SmsObserverService.class);
-            Log.i("MainActivity", "Starting SMS Observer Service");
-            startService(intent);
-        }
+
+        Intent intent1 = new Intent(this, SmsObserverService.class);
+        Log.i("MainActivity", "Starting SMS Observer Service");
+        startService(intent1);
+
 
 //--------------------------------------------------------------------------------------------------
         MaterialToolbar toolbar = findViewById(R.id.toolbar_include);
