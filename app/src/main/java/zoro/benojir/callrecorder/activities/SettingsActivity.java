@@ -1,7 +1,9 @@
 package zoro.benojir.callrecorder.activities;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -13,6 +15,7 @@ import androidx.preference.PreferenceManager;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import zoro.benojir.callrecorder.R;
+import zoro.benojir.callrecorder.helpers.CustomFunctions;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -35,6 +38,17 @@ public class SettingsActivity extends AppCompatActivity {
                     .replace(R.id.settings, new SettingsFragment())
                     .commit();
         }
+
+        Button logoutButton = findViewById(R.id.logoutButton);
+
+        logoutButton.setOnClickListener(v -> {
+            CustomFunctions.logout(SettingsActivity.this);
+
+            Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_include);
         setSupportActionBar(toolbar);

@@ -64,6 +64,11 @@
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+
 
         <receiver
             android:name=".receivers.ActionReceiver"

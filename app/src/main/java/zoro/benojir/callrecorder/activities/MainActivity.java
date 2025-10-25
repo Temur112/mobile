@@ -55,6 +55,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import zoro.benojir.callrecorder.observers.SmsObserver.*;
 import zoro.benojir.callrecorder.services.SmsObserverService;
 
+import zoro.benojir.callrecorder.helpers.CustomFunctions;
+
+
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
@@ -91,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
+
         Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
         intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, this.getPackageName());
         startActivity(intent);
@@ -99,6 +104,14 @@ public class MainActivity extends AppCompatActivity {
         Intent intent1 = new Intent(this, SmsObserverService.class);
         Log.i("MainActivity", "Starting SMS Observer Service");
         startService(intent1);
+
+        if (!CustomFunctions.isUserLoggedIn(this)) {
+            Intent intent3 = new Intent(this, LoginActivity.class);
+            startActivity(intent3);
+            finish();
+            return;
+        }
+
 
 
 //--------------------------------------------------------------------------------------------------
@@ -507,4 +520,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+
 }

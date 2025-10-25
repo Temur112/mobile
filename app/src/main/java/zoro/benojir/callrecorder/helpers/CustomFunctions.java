@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -38,6 +39,9 @@ import java.util.concurrent.TimeUnit;
 public class CustomFunctions {
 
     private static final String TAG = "MADARA";
+    private static final String PREFS_NAME = "app_prefs";
+    private static final String KEY_LOGGED_IN = "is_logged_in";
+    private static final String KEY_TOKEN = "auth_token";
 
     //__________________________________________________________________________________________________
     public static void hideKeyboard(Context context, View view) {
@@ -236,4 +240,30 @@ public class CustomFunctions {
 
     }
 //    ----------------------------------------------------------------------------------------------
+
+
+    public static boolean isUserLoggedIn(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getBoolean(KEY_LOGGED_IN, false);
+    }
+
+    public static void saveLoginState(Context context, boolean loggedIn) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putBoolean(KEY_LOGGED_IN, loggedIn).apply();
+    }
+
+    public static void logout(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().clear().apply(); // Clears login + token
+    }
+
+    public static void saveToken(Context context, String token) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_TOKEN, token).apply();
+    }
+
+    public static String getToken(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getString(KEY_TOKEN, null);
+    }
 }
