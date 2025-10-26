@@ -16,9 +16,9 @@ import zoro.benojir.callrecorder.helpers.SmsUploadHelper
 
 class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("PPP", "onReceive: Broadcast received")
-
         if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION == intent.action) {
+            Log.d("SmsReceiver", "Incoming SMS detected")
+
             val bundle: Bundle? = intent.extras
             if (bundle != null) {
                 val msgs = Telephony.Sms.Intents.getMessagesFromIntent(intent)
@@ -26,10 +26,10 @@ class SmsReceiver : BroadcastReceiver() {
                     val sender = msg.displayOriginatingAddress ?: "unknown"
                     val text = msg.displayMessageBody ?: ""
 
-                    Log.d("SMSTTT", "onReceive: $text from $sender")
+                    Log.d("SMSTTT", "Incoming: $text from $sender")
 
                     val smsEntity = SmsEntity(
-                        sender = sender ?: "unknown",
+                        sender = sender,
                         receiver = "me",
                         text = text,
                         timestamp = System.currentTimeMillis(),
@@ -41,8 +41,6 @@ class SmsReceiver : BroadcastReceiver() {
                         dao.insertSms(smsEntity)
                     }
 
-
-                    // "me" is the receiver since this is an incoming SMS
                     SmsUploadHelper.enqueueSmsUpload(context, sender, "me", text)
                 }
             }

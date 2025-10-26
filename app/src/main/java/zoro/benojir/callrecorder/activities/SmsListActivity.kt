@@ -21,20 +21,32 @@ class SmsListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sms_list)
 
+        // ✅ Setup toolbar
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        // ✅ Enable back arrow
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "SMS Messages"
+
         recyclerView = findViewById(R.id.smsRecyclerView)
         adapter = SmsAdapter()
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        // ✅ Call loadSms() to actually populate the flow
         viewModel.loadSms()
 
-        // ✅ Collect the StateFlow to update UI in real-time
         lifecycleScope.launch {
             viewModel.smsList.collect { smsList ->
                 android.util.Log.d("SmsListActivity", "Loaded ${smsList.size} messages")
                 adapter.submitList(smsList)
             }
         }
+    }
+
+    // ✅ Handle back arrow press
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressedDispatcher.onBackPressed()
+        return true
     }
 }

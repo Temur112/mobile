@@ -341,37 +341,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
 
-            } else if (item.getItemId() == R.id.share_app_action) {
-
-                intent = new Intent(Intent.ACTION_SEND);
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.app_sharing_message) + "\n" + getString(R.string.github_release_page_link));
-                startActivity(Intent.createChooser(intent, "Share via"));
-                return true;
-
-            } else if (item.getItemId() == R.id.more_app_action) {
-
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.more_apps_in_play_store)));
-                startActivity(intent);
-                return true;
-
-            } else if (item.getItemId() == R.id.visitWeb_app_action) {
-
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.website_link)));
-                startActivity(intent);
-                return true;
-
-            } else if (item.getItemId() == R.id.visitGitHub_app_action) {
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_profile_link)));
-                startActivity(intent);
-                return true;
-
-            } else if (item.getItemId() == R.id.visitTG_app_action) {
-
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.telegram_link)));
-                startActivity(intent);
-                return true;
-
             } else if (item.getItemId() == R.id.nav_sms_list) {
                 intent = new Intent(MainActivity.this, SmsListActivity.class);
                 startActivity(intent);
