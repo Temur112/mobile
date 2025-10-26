@@ -4,18 +4,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import zoro.benojir.callrecorder.R
 import zoro.benojir.callrecorder.data.SmsEntity
+import java.text.SimpleDateFormat
+import java.util.*
 
-class SmsAdapter : RecyclerView.Adapter<SmsAdapter.SmsViewHolder>() {
-
-    private var smsList: List<SmsEntity> = emptyList()
-
-    fun submitList(list: List<SmsEntity>) {
-        smsList = list
-        notifyDataSetChanged()
-    }
+class SmsAdapter : ListAdapter<SmsEntity, SmsAdapter.SmsViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SmsViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -24,17 +21,35 @@ class SmsAdapter : RecyclerView.Adapter<SmsAdapter.SmsViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: SmsViewHolder, position: Int) {
-        val sms = smsList[position]
-        holder.sender.text = "From: ${sms.sender}"
-        holder.text.text = sms.text
-        holder.status.text = if (sms.synced) "✅ Synced" else "❌ Not Synced"
+        holder.bind(getItem(position))
     }
 
-    override fun getItemCount(): Int = smsList.size
+    class SmsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val senderText: TextView = itemView.findViewById(R.id.senderTextView)
+        private val receiverText: TextView = itemView.findViewById(R.id.receiverTextView)
+        private val bodyText: TextView = itemView.findViewById(R.id.bodyTextView)
+        private val timestampText: TextView = itemView.findViewById(R.id.timestampTextView)
+        private val syncStatusText: TextView = itemView.findViewById(R.id.syncStatusTextView)
 
-    class SmsViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val sender: TextView = view.findViewById(R.id.smsSender)
-        val text: TextView = view.findViewById(R.id.smsText)
-        val status: TextView = view.findViewById(R.id.smsStatus)
+        private val dateFormatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+        fun bind(sms: SmsEntity) {
+            senderText.text = "From: ${sms.sender}"
+            receiverText.text = "To: ${sms.receiver}"
+            bodyText.text = sms.text
+            timestampText.text = dateFormatter.format(Date(sms.timestamp))
+            if (sms.synced) {
+                syncStatusText.text = "Synced"
+                syncStatusText.setTextColor(itemView.context.getColor(android.R.color.holo_green_dark))
+            } else {
+                syncStatusText.text = "Pending"
+                syncStatusText.setTextColor(itemView.context.getColor(android.R.color.holo_red_dark))
+            }
+        }
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<SmsEntity>() {
+        override fun areItemsTheSame(oldItem: SmsEntity, newItem: SmsEntity) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: SmsEntity, newItem: SmsEntity) = oldItem == newItem
     }
 }

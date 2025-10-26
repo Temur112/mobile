@@ -7,6 +7,7 @@ class SmsRepository(context: Context) {
     private val smsDao = AppDatabase.getInstance(context).smsDao()
 
     suspend fun insertSms(sms: SmsEntity): Long {
+
         return smsDao.insertSms(sms)
     }
 

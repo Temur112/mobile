@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
-import android.telephony.TelephonyManager
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,18 +24,11 @@ class SmsObserver(
 
     override fun onChange(selfChange: Boolean) {
         super.onChange(selfChange)
-        Log.i("SmsObserver", "onChange triggered")
-
+        Log.i("SmsObserver", "onChange: ")
         val cursor = context.contentResolver.query(
             uri,
-            arrayOf(
-                Telephony.Sms._ID,
-                Telephony.Sms.ADDRESS,
-                Telephony.Sms.BODY,
-                Telephony.Sms.TYPE
-            ),
-            null, null,
-            Telephony.Sms.DEFAULT_SORT_ORDER
+            arrayOf(Telephony.Sms._ID, Telephony.Sms.ADDRESS, Telephony.Sms.BODY, Telephony.Sms.TYPE),
+            null, null, Telephony.Sms.DEFAULT_SORT_ORDER
         )
 
         cursor?.use {
@@ -48,50 +40,31 @@ class SmsObserver(
                     val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
                     val type = it.getInt(it.getColumnIndexOrThrow(Telephony.Sms.TYPE))
 
-                    val (sender, receiver) = resolveSenderReceiver(context, address, type)
+                    // Determine who is sender and receiver
+                    val (sender, receiver) = if (type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
+                        Pair(address, "me") // Incoming message
+                    } else {
+                        Pair("me", address) // Outgoing message
+                    }
 
-                    Log.d("SMS_OBSERVER", "New SMS detected: sender=$sender, receiver=$receiver, body=$body")
+                    Log.d("SMSTTT", "onChange: $body from=$sender to=$receiver")
 
-                    // ✅ Save to local Room database
-                    insertSmsToDb(context, sender, receiver, body)
+                    val smsEntity = SmsEntity(
+                        sender = "me",
+                        receiver = address ?: "unknown",
+                        text = body,
+                        timestamp = System.currentTimeMillis(),
+                        synced = false
+                    )
 
-                    // ✅ Still enqueue for upload
-                    SmsUploadHelper.enqueueSmsUpload(context, sender, body)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val dao = AppDatabase.getInstance(context).smsDao()
+                        dao.insertSms(smsEntity)
+                    }
+
+                    SmsUploadHelper.enqueueSmsUpload(context, sender, receiver, body)
                 }
             }
-        }
-    }
-
-    private fun insertSmsToDb(context: Context, sender: String, receiver: String, body: String) {
-        val db = AppDatabase.getInstance(context)
-        val smsDao = db.smsDao()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            val sms = SmsEntity(
-                sender = sender,
-                receiver = receiver,
-                text = body,
-                timestamp = System.currentTimeMillis(),
-                synced = false
-            )
-            smsDao.insertSms(sms)
-            Log.d("SMS_DB", "Inserted into DB: $sender -> $receiver | $body")
-        }
-    }
-
-    /**
-     * Resolves who is sender and who is receiver based on SMS type:
-     * - Inbox (1): someone else sent to us → sender = address, receiver = device number
-     * - Sent (2): we sent → sender = device number, receiver = address
-     */
-    private fun resolveSenderReceiver(context: Context, address: String, type: Int): Pair<String, String> {
-        val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        val simNumber = tm.line1Number ?: "unknown"
-
-        return if (type == Telephony.Sms.MESSAGE_TYPE_INBOX) {
-            Pair(address, simNumber)
-        } else {
-            Pair(simNumber, address)
         }
     }
 }

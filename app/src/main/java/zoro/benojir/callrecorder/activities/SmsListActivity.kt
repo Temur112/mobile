@@ -21,19 +21,20 @@ class SmsListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sms_list)
 
-        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView = findViewById(R.id.smsRecyclerView)
         adapter = SmsAdapter()
-        recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Observe data
+        // ✅ Call loadSms() to actually populate the flow
+        viewModel.loadSms()
+
+        // ✅ Collect the StateFlow to update UI in real-time
         lifecycleScope.launch {
-            viewModel.smsList.collect { list ->
-                adapter.submitList(list)
+            viewModel.smsList.collect { smsList ->
+                android.util.Log.d("SmsListActivity", "Loaded ${smsList.size} messages")
+                adapter.submitList(smsList)
             }
         }
-
-        // Load initial data
-        viewModel.loadSms()
     }
 }

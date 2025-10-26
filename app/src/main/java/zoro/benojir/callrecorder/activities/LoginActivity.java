@@ -2,6 +2,7 @@ package zoro.benojir.callrecorder.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import zoro.benojir.callrecorder.databinding.ActivityLoginBinding;
@@ -57,6 +58,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String token = response.body().getToken();
+
+                    Log.d("TOKEN", "onResponse: " + token + response);
 
                     // Save login + token
                     CustomFunctions.saveLoginState(LoginActivity.this, true);
