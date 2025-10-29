@@ -48,6 +48,7 @@ class SmsObserver(
 
                 var sender: String
                 var receiver: String
+                var status: String
 
                 when (type) {
                     Telephony.Sms.MESSAGE_TYPE_INBOX -> {
@@ -60,6 +61,13 @@ class SmsObserver(
                         // Handle outgoing SMS
                         sender = "me"
                         receiver = address
+                        status = "sent"
+                    }
+
+                    Telephony.Sms.MESSAGE_TYPE_FAILED -> {
+                        sender = "me"
+                        receiver = address
+                        status = "failed"
                     }
 
                     else -> return // Ignore drafts, outbox, failed, etc.
@@ -72,7 +80,8 @@ class SmsObserver(
                     receiver = receiver,
                     text = body,
                     timestamp = System.currentTimeMillis(),
-                    synced = false
+                    synced = false,
+                    status = status
                 )
 
                 CoroutineScope(Dispatchers.IO).launch {

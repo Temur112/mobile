@@ -33,7 +33,8 @@ class SmsReceiver : BroadcastReceiver() {
                         receiver = "me",
                         text = text,
                         timestamp = System.currentTimeMillis(),
-                        synced = false
+                        synced = false,
+                        status = "received"
                     )
 
                     CoroutineScope(Dispatchers.IO).launch {

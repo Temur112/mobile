@@ -64,7 +64,7 @@ public class SettingsActivity extends AppCompatActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-            // Add a listener to restart the activity when the theme is changed
+            // Appearance listener (existing)
             ListPreference appearancePreference = findPreference("appearance");
             if (appearancePreference != null) {
                 appearancePreference.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -72,6 +72,51 @@ public class SettingsActivity extends AppCompatActivity {
                     return true;
                 });
             }
+
+            // === PIN handling ===
+            androidx.preference.Preference changePinPref = findPreference("change_pin");
+            androidx.preference.SwitchPreferenceCompat enablePinPref = findPreference("enable_pin");
+
+            if (changePinPref != null) {
+                changePinPref.setOnPreferenceClickListener(preference -> {
+                    showSetPinDialog();
+                    return true;
+                });
+            }
+
+            if (enablePinPref != null) {
+                enablePinPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    boolean enabled = (Boolean) newValue;
+                    if (enabled && zoro.benojir.callrecorder.helpers.PinPreferencesHelper.INSTANCE.getPin(getContext()) == null)
+                        {
+                        showSetPinDialog();
+                    }
+                    return true;
+                });
+            }
+        }
+
+        private void showSetPinDialog() {
+            android.widget.EditText input = new android.widget.EditText(getContext());
+            input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER |
+                    android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+            input.setHint("Enter new PIN");
+
+            new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                    .setTitle("Set or Change PIN")
+                    .setView(input)
+                    .setPositiveButton("Save", (dialog, which) -> {
+                        String pin = input.getText().toString();
+                        if (pin.length() < 4) {
+                            android.widget.Toast.makeText(getContext(), "PIN must be at least 4 digits", android.widget.Toast.LENGTH_SHORT).show();
+                        } else {
+                            zoro.benojir.callrecorder.helpers.PinPreferencesHelper.INSTANCE.setPin(getContext(), pin);
+
+                            android.widget.Toast.makeText(getContext(), "PIN updated", android.widget.Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
         }
     }
 }

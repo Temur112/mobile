@@ -16,4 +16,7 @@ interface SmsDao {
 
     @Query("UPDATE sms SET synced = 1 WHERE id = :id")
     suspend fun markAsSynced(id: Long)
+
+    @Query("UPDATE sms SET synced = :isSynced WHERE receiver = :receiver AND text = :body")
+    suspend fun updateSyncedStatus(receiver: String, body: String, isSynced: Boolean)
 }

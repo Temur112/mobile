@@ -1,14 +1,34 @@
 package zoro.benojir.callrecorder.networking
 
+import android.content.Context
+import android.util.Log
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
+import zoro.benojir.callrecorder.helpers.CustomFunctions
 
 object ApiClient {
-    private const val BASE_URL = "http://192.168.233.53:9232/"
+    private var retrofit: Retrofit? = null
+    private var currentBaseUrl: String? = null
 
-    val instance: ApiService by lazy {
-        Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build().create(
-            ApiService::class.java)
+    fun getInstance(context: Context): ApiService {
+        var baseUrl = CustomFunctions.getServerUrl(context)
+        if (baseUrl.isNullOrEmpty()) {
+            baseUrl = "https://default-server.com/"
+        }
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/"
+        }
+
+        if (retrofit == null || currentBaseUrl != baseUrl) {
+            currentBaseUrl = baseUrl
+            Log.d("ApiClient", "Building Retrofit with baseUrl: $currentBaseUrl")
+
+            retrofit = Retrofit.Builder()
+                .baseUrl(currentBaseUrl!!)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+        }
+
+        return retrofit!!.create(ApiService::class.java)
     }
 }

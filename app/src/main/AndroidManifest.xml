@@ -72,6 +72,10 @@
             android:exported="true"
             android:screenOrientation="portrait" />
 
+        <activity android:name=".activities.PinLockActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
 
         <receiver
             android:name=".receivers.ActionReceiver"

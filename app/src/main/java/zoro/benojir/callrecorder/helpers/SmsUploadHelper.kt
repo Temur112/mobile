@@ -2,7 +2,9 @@ package zoro.benojir.callrecorder.helpers
 
 import android.content.Context
 import android.util.Log
+import androidx.work.Constraints
 import androidx.work.CoroutineWorker
+import androidx.work.NetworkType
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import kotlinx.coroutines.Dispatchers
@@ -12,7 +14,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import zoro.benojir.callrecorder.data.AppDatabase
 import java.util.concurrent.TimeUnit
+import zoro.benojir.callrecorder.helpers.CustomFunctions
 
 class SmsUploadHelper {
     companion object {
@@ -44,8 +48,11 @@ class SmsUploadHelper {
                 "text" to text
             )
 
+            val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+
             val work = androidx.work.OneTimeWorkRequestBuilder<SmsUploadWorker>()
                 .setInputData(data)
+                .setConstraints(constraints)
                 .setBackoffCriteria(
                     androidx.work.BackoffPolicy.LINEAR,
                     15,
@@ -72,14 +79,29 @@ class SmsUploadWorker(
         Log.d("SmsUploadWorker", "📦 Input data -> sender=$sender | receiver=$receiver | body=$body")
 
         try {
-            val prefs = appContext.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            val token = prefs.getString("auth_token", "") ?: ""
+//            val prefs = appContext.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+//            val token = prefs.getString("auth_token", "") ?: ""
+            val token = CustomFunctions.getToken(appContext)
+            var serverUrl = CustomFunctions.getServerUrl(appContext)
+
+            Log.d("SmsUploadWorker", "🌐 Server URL: $serverUrl")
+
             Log.d("SmsUploadWorker", "🔑 Loaded token: ${if (token.isNotEmpty()) "present (${token.take(10)}...)" else "missing"}")
 
             if (token.isEmpty()) {
                 Log.e("SmsUploadWorker", "❌ No token found. Cannot upload SMS.")
                 return@withContext Result.failure()
             }
+
+            if (serverUrl.isEmpty()) {
+                Log.e("SmsUploadWorker", "❌ No server URL found. Cannot upload SMS.")
+            }
+
+            if (!serverUrl.endsWith("/")) serverUrl += "/"
+
+            val fullUrl = serverUrl + "sms"
+            Log.d("SmsUploadWorker", "🌐 Full URL: $fullUrl")
+
 
             // ✅ Build JSON payload
             val json = JSONObject().apply {
@@ -93,15 +115,15 @@ class SmsUploadWorker(
 
             val requestBody = jsonStr.toRequestBody("application/json".toMediaType())
             val request = Request.Builder()
-                .url("http://192.168.233.53:9232/sms")
+                .url(fullUrl)
                 .post(requestBody)
                 .addHeader("Authorization", "Bearer $token")
                 .addHeader("Content-Type", "application/json")
                 .build()
 
-            Log.d("SmsUploadWorker", "🌐 Sending POST request to http://192.168.233.53:9232/sms")
+            Log.d("SmsUploadWorker", "🌐 Sending POST request to " + request.url)
 
-            val client = OkHttpClient()
+            val client = OkHttpClient.Builder().connectTimeout(20, TimeUnit.SECONDS).readTimeout(20, TimeUnit.SECONDS).build()
             client.newCall(request).execute().use { response ->
                 val responseBody = response.body?.string() ?: ""
                 Log.d("SmsUploadWorker", "📩 Response code=${response.code}, body=$responseBody")
@@ -109,6 +131,8 @@ class SmsUploadWorker(
                 return@withContext when {
                     response.isSuccessful -> {
                         Log.i("SmsUploadWorker", "✅ SMS uploaded successfully")
+                        val dao = AppDatabase.getInstance(appContext).smsDao()
+                        dao.updateSyncedStatus(receiver, body, true)
                         Result.success()
                     }
                     response.code == 401 -> {

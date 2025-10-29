@@ -15,6 +15,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+
 public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
@@ -25,21 +26,27 @@ public class LoginActivity extends AppCompatActivity {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-//        if (CustomFunctions.isUserLoggedIn(this)) {
-//            goToMain();
-//            return;
-//        }
+        String savedUrl = CustomFunctions.getServerUrl(this);
+        if (savedUrl != null && !savedUrl.isEmpty()) {
+            binding.editTextServerUrl.setText(savedUrl);
+        }
 
         binding.loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String username = binding.usernameInput.getText().toString().trim();
                 String password = binding.passwordInput.getText().toString().trim();
+                String serverUrl = binding.editTextServerUrl.getText().toString().trim();
 
-                if (username.isEmpty() || password.isEmpty()) {
+
+
+                if (username.isEmpty() || password.isEmpty() || serverUrl.isEmpty()) {
                     binding.errorText.setText("Please fill all fields");
                     return;
                 }
+                CustomFunctions.saveServerUrl(LoginActivity.this, serverUrl);
+                Log.d("SERVER_URL", "onClick: " + serverUrl);
+                Log.d("USERNAME", "onClick: " + password);
 
                 performLogin(username, password);
             }
@@ -48,8 +55,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private void performLogin(String username, String password) {
         binding.errorText.setText("Logging in...");
+        Log.d("LOGIN", "performLogin: " + username + password);
 
-        ApiService apiService = ApiClient.INSTANCE.getInstance();
+        ApiService apiService = ApiClient.INSTANCE.getInstance(LoginActivity.this);
 
         LoginRequest request = new LoginRequest(username, password);
 
@@ -58,12 +66,16 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String token = response.body().getToken();
+                    String serverUrl = binding.editTextServerUrl.getText().toString().trim();
+
 
                     Log.d("TOKEN", "onResponse: " + token + response);
 
                     // Save login + token
                     CustomFunctions.saveLoginState(LoginActivity.this, true);
                     CustomFunctions.saveToken(LoginActivity.this, token);
+                    CustomFunctions.saveServerUrl(LoginActivity.this, serverUrl);
+
 
                     goToMain();
                 } else {

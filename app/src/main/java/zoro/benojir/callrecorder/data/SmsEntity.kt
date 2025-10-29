@@ -14,7 +14,8 @@ data class SmsEntity(
     val receiver: String,
     val text: String,
     val timestamp: Long,
-    val synced: Boolean = false
+    val synced: Boolean = false,
+    val status: String
 )
 
 

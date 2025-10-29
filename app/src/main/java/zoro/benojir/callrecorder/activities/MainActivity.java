@@ -54,6 +54,12 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 import zoro.benojir.callrecorder.observers.SmsObserver.*;
 import zoro.benojir.callrecorder.services.SmsObserverService;
+import zoro.benojir.callrecorder.helpers.PinPreferencesHelper;
+import zoro.benojir.callrecorder.activities.PinLockActivity;
+import androidx.lifecycle.ProcessLifecycleOwner;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleOwner;
 
 import zoro.benojir.callrecorder.helpers.CustomFunctions;
 
@@ -73,11 +79,27 @@ public class MainActivity extends AppCompatActivity {
     private String lastAppearance;
     private static final int SMS_PERMISSION_CODE = 101;
 
-
+    private boolean isGoingToBackground = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ProcessLifecycleOwner.get().getLifecycle().addObserver((LifecycleEventObserver) (source, event) -> {
+            if (event == Lifecycle.Event.ON_STOP) {
+                isGoingToBackground = true;
+
+                // Wait 700ms before deciding it's truly in background
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (isGoingToBackground) {
+                        // ✅ App really went to background or screen off
+                        PinPreferencesHelper.INSTANCE.setSessionUnlocked(this, false);
+                    }
+                }, 700);
+            } else if (event == Lifecycle.Event.ON_START) {
+                // App came back to foreground
+                isGoingToBackground = false;
+            }
+        });
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (preferences.getString("appearance", "device_default").equals("dark_mode")) {
@@ -493,6 +515,29 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         }
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (PinPreferencesHelper.INSTANCE.isPinEnabled(this)) {
+            boolean isUnlocked = PinPreferencesHelper.INSTANCE.isSessionUnlocked(this);
+            boolean shouldRelock = PinPreferencesHelper.INSTANCE.shouldRelock(this, 1); // timeout: 5 min
+
+            if (!isUnlocked || shouldRelock) {
+                Intent lockIntent = new Intent(this, PinLockActivity.class);
+                startActivity(lockIntent);
+                finish();
+            }
+        }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Reset session lock when app is fully closed
+        PinPreferencesHelper.INSTANCE.setSessionUnlocked(this, false);
     }
 
 

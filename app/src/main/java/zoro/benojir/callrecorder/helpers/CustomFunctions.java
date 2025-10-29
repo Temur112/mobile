@@ -266,4 +266,15 @@ public class CustomFunctions {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getString(KEY_TOKEN, null);
     }
+
+
+    public static void saveServerUrl(Context context, String url) {
+        SharedPreferences prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        prefs.edit().putString("server_url", url).apply();
+    }
+
+    public static String getServerUrl(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        return prefs.getString("server_url", "");
+    }
 }

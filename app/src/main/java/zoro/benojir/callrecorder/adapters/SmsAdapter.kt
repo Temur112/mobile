@@ -12,7 +12,7 @@ import zoro.benojir.callrecorder.data.SmsEntity
 import java.text.SimpleDateFormat
 import java.util.*
 
-class SmsAdapter : ListAdapter<SmsEntity, SmsAdapter.SmsViewHolder>(DiffCallback()) {
+class  SmsAdapter : ListAdapter<SmsEntity, SmsAdapter.SmsViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SmsViewHolder {
         val view = LayoutInflater.from(parent.context)

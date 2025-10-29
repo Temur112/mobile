@@ -43,5 +43,19 @@
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
+    <PreferenceCategory
+        app:title="Security">
+
+        <SwitchPreferenceCompat
+            app:key="enable_pin"
+            app:title="Enable PIN Lock"
+            app:summary="Require PIN on app start" />
+
+        <Preference
+            app:key="change_pin"
+            app:title="Set or Change PIN"
+            app:summary="Tap to set or change your PIN" />
+    </PreferenceCategory>
+
 
 </PreferenceScreen>

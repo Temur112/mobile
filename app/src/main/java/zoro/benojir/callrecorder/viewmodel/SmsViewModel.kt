@@ -28,7 +28,8 @@ class SmsViewModel(application: Application) : AndroidViewModel(application) {
                 sender = sender,
                 receiver = receiver,
                 text = text,
-                timestamp = timestamp
+                timestamp = timestamp,
+                status = "received"
             )
             repository.insertSms(sms)
             loadSms() // refresh list

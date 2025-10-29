@@ -7,6 +7,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <EditText
+        android:id="@+id/editTextServerUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Server URL"
+        android:inputType="textUri"
+        android:layout_marginTop="16dp"
+        android:autofillHints="username" />
+
     <EditText
         android:id="@+id/usernameInput"
         android:hint="Username"
