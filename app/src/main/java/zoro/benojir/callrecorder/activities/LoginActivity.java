@@ -75,6 +75,8 @@ public class LoginActivity extends AppCompatActivity {
                     CustomFunctions.saveLoginState(LoginActivity.this, true);
                     CustomFunctions.saveToken(LoginActivity.this, token);
                     CustomFunctions.saveServerUrl(LoginActivity.this, serverUrl);
+                    CustomFunctions.saveUserName(LoginActivity.this, username);
+
 
 
                     goToMain();

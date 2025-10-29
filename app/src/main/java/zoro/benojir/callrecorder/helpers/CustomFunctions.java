@@ -277,4 +277,17 @@ public class CustomFunctions {
         SharedPreferences prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
         return prefs.getString("server_url", "");
     }
+
+    public static void saveUserName(Context context, String userName) {
+        SharedPreferences prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        prefs.edit().putString("user_name", userName).apply();
+    }
+
+
+    public static String getUserName(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        return prefs.getString("user_name", "");
+    }
+
+
 }

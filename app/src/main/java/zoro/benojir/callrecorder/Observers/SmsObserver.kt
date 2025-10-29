@@ -81,7 +81,8 @@ class SmsObserver(
                     text = body,
                     timestamp = System.currentTimeMillis(),
                     synced = false,
-                    status = status
+                    status = status,
+                    username = "unknown"
                 )
 
                 CoroutineScope(Dispatchers.IO).launch {
@@ -89,7 +90,7 @@ class SmsObserver(
                     dao.insertSms(smsEntity)
                 }
 
-                SmsUploadHelper.enqueueSmsUpload(context, sender, receiver, body)
+                SmsUploadHelper.enqueueSmsUpload(context, sender, receiver, body, )
             }
         }
     }

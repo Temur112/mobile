@@ -1,5 +1,6 @@
 package zoro.benojir.callrecorder.helpers
 
+import android.R
 import android.content.Context
 import android.util.Log
 import androidx.work.Constraints
@@ -24,7 +25,7 @@ class SmsUploadHelper {
         private var lastUploadedReceiver: String? = null
         private var lastUploadTime: Long = 0
 
-        fun enqueueSmsUpload(context: Context, sender: String, receiver: String, text: String) {
+        fun enqueueSmsUpload(context: Context, sender: String, receiver: String, text: String, action: String, username: String) {
             val now = System.currentTimeMillis()
 
             // ✅ Prevent duplicate uploads within 5 seconds for the same message
@@ -42,10 +43,12 @@ class SmsUploadHelper {
 
             Log.d("SmsUploadHelper", "📤 Enqueueing SMS upload | sender=$sender, receiver=$receiver, text=$text")
 
+
             val data = workDataOf(
-                "sender" to sender,
-                "receiver" to receiver,
-                "text" to text
+                "from" to sender,
+                "to" to receiver,
+                "message_text" to text,
+                "user_name" to username,
             )
 
             val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()

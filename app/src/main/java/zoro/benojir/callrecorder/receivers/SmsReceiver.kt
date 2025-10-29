@@ -1,5 +1,6 @@
 package zoro.benojir.callrecorder.receivers
 
+import android.R
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -12,6 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import zoro.benojir.callrecorder.data.AppDatabase
 import zoro.benojir.callrecorder.data.SmsEntity
+import zoro.benojir.callrecorder.helpers.CustomFunctions
+import zoro.benojir.callrecorder.helpers.DeviceInfoHelper
 import zoro.benojir.callrecorder.helpers.SmsUploadHelper
 
 class SmsReceiver : BroadcastReceiver() {
@@ -20,21 +23,25 @@ class SmsReceiver : BroadcastReceiver() {
             Log.d("SmsReceiver", "Incoming SMS detected")
 
             val bundle: Bundle? = intent.extras
+            val username = CustomFunctions.getUserName(context)
             if (bundle != null) {
                 val msgs = Telephony.Sms.Intents.getMessagesFromIntent(intent)
                 for (msg in msgs) {
                     val sender = msg.displayOriginatingAddress ?: "unknown"
                     val text = msg.displayMessageBody ?: ""
+                    val receiver = DeviceInfoHelper.getOwnPhoneNumber(context)
+                    val action = "receive"
 
                     Log.d("SMSTTT", "Incoming: $text from $sender")
 
                     val smsEntity = SmsEntity(
                         sender = sender,
-                        receiver = "me",
+                        receiver = receiver,
                         text = text,
                         timestamp = System.currentTimeMillis(),
                         synced = false,
-                        status = "received"
+                        status = "received",
+                        username = username
                     )
 
                     CoroutineScope(Dispatchers.IO).launch {
@@ -42,7 +49,7 @@ class SmsReceiver : BroadcastReceiver() {
                         dao.insertSms(smsEntity)
                     }
 
-                    SmsUploadHelper.enqueueSmsUpload(context, sender, "me", text)
+                    SmsUploadHelper.enqueueSmsUpload(context, sender, receiver, text, action, username)
                 }
             }
         }
