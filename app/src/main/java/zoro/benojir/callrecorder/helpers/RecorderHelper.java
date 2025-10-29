@@ -13,6 +13,15 @@ import androidx.preference.PreferenceManager;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.UUID;
+
+import kotlin.Unit;
+import kotlin.coroutines.Continuation;
+import kotlinx.coroutines.Dispatchers;
+import kotlinx.coroutines.GlobalScope;
+import kotlinx.coroutines.BuildersKt;
+import zoro.benojir.callrecorder.data.CallRecordEntity;
+import zoro.benojir.callrecorder.data.CallRecordRepository;
 
 public class RecorderHelper {
 
@@ -22,24 +31,40 @@ public class RecorderHelper {
     private final String phoneNumber;
     private final SharedPreferences preferences;
 
-//__________________________________________________________________________________________________
+    // -------------------------------------------------------------------
+    private long startTimeMillis;
+    private String callId;
+    private String callType = "unknown";   // inbound / outbound / internal
+    private String callStatus = "answered"; // answered / no_answer / busy / failed
+    // -------------------------------------------------------------------
 
     public RecorderHelper(Context context, String phoneNumber) {
         this.context = context;
         this.phoneNumber = phoneNumber;
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        this.callId = UUID.randomUUID().toString();
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
-//__________________________________________________________________________________________________
+
+    public void setCallType(String type) {
+        this.callType = type;
+    }
+
+    public void setCallStatus(String status) {
+        this.callStatus = status;
+    }
+
+    // -------------------------------------------------------------------
 
     public void startRecoding() {
+        startTimeMillis = System.currentTimeMillis();
         File directory = context.getExternalFilesDir("/recordings/");
 
-        if (!directory.exists()) {
+        if (directory != null && !directory.exists()) {
             if (!directory.mkdirs()) {
                 Toast.makeText(context, "Failed to create directory.", Toast.LENGTH_SHORT).show();
+                return;
             }
         }
-
 
         String fileName = directory.getAbsolutePath() + "/" + getFileName();
 
@@ -57,33 +82,53 @@ public class RecorderHelper {
             recorder.start();
 
             if (preferences.getBoolean("start_toast", false)) {
-                new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, "Recording started!", Toast.LENGTH_SHORT).show());
+                new Handler(Looper.getMainLooper()).post(() ->
+                        Toast.makeText(context, "Recording started!", Toast.LENGTH_SHORT).show()
+                );
             }
+
+            Log.d(TAG, "🎙️ Recording started for " + phoneNumber + ", callId=" + callId);
+
         } catch (Exception e) {
             Log.e(TAG, "startVoiceRecoding: ", e);
             recorder = null;
-            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, "Recording start failed!", Toast.LENGTH_SHORT).show());
+            new Handler(Looper.getMainLooper()).post(() ->
+                    Toast.makeText(context, "Recording start failed!", Toast.LENGTH_SHORT).show()
+            );
         }
     }
-//--------------------------------------------------------------------------------------------------
+
+    // -------------------------------------------------------------------
 
     public void stopVoiceRecoding() {
+        long endTimeMillis = System.currentTimeMillis();
+        long durationSeconds = (endTimeMillis - startTimeMillis) / 1000;
+
         try {
-            recorder.stop();
-            recorder.reset();
-            recorder.release();
-            recorder = null;
+            if (recorder != null) {
+                recorder.stop();
+                recorder.reset();
+                recorder.release();
+                recorder = null;
+            }
 
             File directory = context.getExternalFilesDir("/recordings/");
             if (directory != null && directory.exists()) {
                 File[] files = directory.listFiles();
                 if (files != null && files.length > 0) {
-                    // Get latest file (the one just recorded)
                     File lastFile = files[files.length - 1];
                     Log.d(TAG, "Recording saved: " + lastFile.getAbsolutePath());
 
+                    // ✅ Save call metadata to local DB
+                    saveCallMetadata(
+                            lastFile.getAbsolutePath(),
+                            durationSeconds,
+                            startTimeMillis,
+                            endTimeMillis
+                    );
+
                     // ✅ Enqueue upload work
-                    zoro.benojir.callrecorder.helpers.UploadWorkHelper.INSTANCE.enqueueVoiceUpload(
+                    UploadWorkHelper.INSTANCE.enqueueVoiceUpload(
                             context,
                             lastFile.getAbsolutePath()
                     );
@@ -108,10 +153,50 @@ public class RecorderHelper {
         }
     }
 
-//    ----------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------
+
+    private void saveCallMetadata(String filePath, long duration, long startTime, long endTime) {
+        // ⚙️ Run in background thread (Kotlin coroutine from Java)
+        BuildersKt.launch(GlobalScope.INSTANCE, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (scope, continuation) -> {
+            try {
+                CallRecordRepository repo = new CallRecordRepository(context);
+
+                CallRecordEntity entity = new CallRecordEntity(
+                        0,
+                        callId,
+                        phoneNumber,
+                        callType,
+                        callStatus,
+                        duration,
+                        startTime,
+                        endTime,
+                        filePath,
+                        false
+                );
+
+                repo.insert(entity);
+                Log.i(TAG, "📀 Call metadata saved: " + entity);
+
+            } catch (Exception ex) {
+                Log.e(TAG, "❌ Failed to save call metadata", ex);
+            }
+
+            return Unit.INSTANCE;
+        });
+    }
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+    public String getCallType() { return callType; }
+    public String getCallStatus() { return callStatus; }
+
+    // -------------------------------------------------------------------
 
     private String getFileName() {
-        return ContactsHelper.getContactNameByPhoneNumber(context, phoneNumber)
+        String contactName = ContactsHelper.getContactNameByPhoneNumber(context, phoneNumber);
+        if (contactName == null || contactName.isEmpty()) contactName = "Unknown";
+
+        return contactName
                 + "_("
                 + phoneNumber
                 + ")_"
