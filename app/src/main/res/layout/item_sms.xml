@@ -1,68 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    card_view:cardCornerRadius="12dp"
-    card_view:cardElevation="4dp">
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="?android:attr/selectableItemBackground">
 
-    <LinearLayout
+    <!-- From / To line with direction arrow -->
+    <TextView
+        android:id="@+id/textFromTo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:text="➡️  From: me → To: +998991234567"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:textColor="#000000"
+        android:paddingBottom="4dp" />
 
-        <TextView
-            android:id="@+id/senderTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Sender"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+    <!-- Message body -->
+    <TextView
+        android:id="@+id/textBody"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Message body"
+        android:textSize="14sp"
+        android:textColor="#333333"
+        android:paddingBottom="4dp" />
 
-        <TextView
-            android:id="@+id/receiverTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Receiver"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/bodyTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Message body goes here..."
-            android:layout_marginTop="4dp"
-            android:textSize="15sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/timestampTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="2025-10-25 18:00"
-                android:textSize="12sp"
-                android:textColor="@android:color/darker_gray" />
-
-            <TextView
-                android:id="@+id/syncStatusTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Synced"
-                android:textSize="12sp"
-                android:textColor="@android:color/holo_green_dark"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-    </LinearLayout>
-
-</androidx.cardview.widget.CardView>
+    <!-- Time, user and sync info -->
+    <TextView
+        android:id="@+id/textMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Time: 2025-10-30 12:44 | User: admin | Synced ✅"
+        android:textSize="12sp"
+        android:textColor="#555555" />
+</LinearLayout>

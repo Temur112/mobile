@@ -19,7 +19,7 @@ data class LoginResponse(
 
 
 interface ApiService {
-    @POST("login")
+    @POST("/api/call/v1/auth")
     fun login(
         @Body request: LoginRequest
     ): Call<LoginResponse>

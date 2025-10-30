@@ -12,7 +12,7 @@ import zoro.benojir.callrecorder.data.SmsEntity
 import java.text.SimpleDateFormat
 import java.util.*
 
-class  SmsAdapter : ListAdapter<SmsEntity, SmsAdapter.SmsViewHolder>(DiffCallback()) {
+class SmsAdapter : ListAdapter<SmsEntity, SmsAdapter.SmsViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SmsViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -25,25 +25,36 @@ class  SmsAdapter : ListAdapter<SmsEntity, SmsAdapter.SmsViewHolder>(DiffCallbac
     }
 
     class SmsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val senderText: TextView = itemView.findViewById(R.id.senderTextView)
-        private val receiverText: TextView = itemView.findViewById(R.id.receiverTextView)
-        private val bodyText: TextView = itemView.findViewById(R.id.bodyTextView)
-        private val timestampText: TextView = itemView.findViewById(R.id.timestampTextView)
-        private val syncStatusText: TextView = itemView.findViewById(R.id.syncStatusTextView)
-
-        private val dateFormatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        private val textFromTo: TextView = itemView.findViewById(R.id.textFromTo)
+        private val textBody: TextView = itemView.findViewById(R.id.textBody)
+        private val textMeta: TextView = itemView.findViewById(R.id.textMeta)
+        private val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
         fun bind(sms: SmsEntity) {
-            senderText.text = "From: ${sms.sender}"
-            receiverText.text = "To: ${sms.receiver}"
-            bodyText.text = sms.text
-            timestampText.text = dateFormatter.format(Date(sms.timestamp))
-            if (sms.synced) {
-                syncStatusText.text = "Synced"
-                syncStatusText.setTextColor(itemView.context.getColor(android.R.color.holo_green_dark))
+            val displayReceiver = if (sms.receiver.equals("unknown", true) || sms.receiver.isBlank()) "me" else sms.receiver
+
+            // Determine direction visually
+            val isOutgoing = sms.sender.equals("me", true) || sms.status.equals("sent", true)
+            val arrow = if (isOutgoing) "➡️" else "⬅️"
+
+            val fromTo = if (isOutgoing) {
+                "$arrow  From: ${sms.sender}  →  To: $displayReceiver"
             } else {
-                syncStatusText.text = "Pending"
-                syncStatusText.setTextColor(itemView.context.getColor(android.R.color.holo_red_dark))
+                "$arrow  From: ${sms.sender}  →  To: me"
+            }
+
+            textFromTo.text = fromTo
+            textBody.text = sms.text
+
+            val timeStr = formatter.format(Date(sms.timestamp))
+            val syncStatus = if (sms.synced) "Synced ✅" else "Pending ❌"
+            textMeta.text = "Time: $timeStr | User: ${sms.username} | $syncStatus"
+
+            // Optional: color coding
+            if (isOutgoing) {
+                textFromTo.setTextColor(itemView.context.getColor(android.R.color.holo_blue_dark))
+            } else {
+                textFromTo.setTextColor(itemView.context.getColor(android.R.color.holo_green_dark))
             }
         }
     }

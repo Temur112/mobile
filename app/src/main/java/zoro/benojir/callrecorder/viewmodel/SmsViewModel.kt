@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import zoro.benojir.callrecorder.data.SmsEntity
 import zoro.benojir.callrecorder.data.SmsRepository
+import zoro.benojir.callrecorder.helpers.CustomFunctions
 
 class SmsViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -21,6 +22,7 @@ class SmsViewModel(application: Application) : AndroidViewModel(application) {
             _smsList.value = repository.getAllSms(limit, offset)
         }
     }
+    val username = CustomFunctions.getUserName(getApplication<Application>().applicationContext)
 
     fun addSms(sender: String, receiver: String, text: String, timestamp: Long) {
         viewModelScope.launch {
@@ -29,7 +31,8 @@ class SmsViewModel(application: Application) : AndroidViewModel(application) {
                 receiver = receiver,
                 text = text,
                 timestamp = timestamp,
-                status = "received"
+                status = "received",
+                username = username
             )
             repository.insertSms(sms)
             loadSms() // refresh list

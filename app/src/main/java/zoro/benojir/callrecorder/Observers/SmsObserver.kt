@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import zoro.benojir.callrecorder.data.AppDatabase
 import zoro.benojir.callrecorder.data.SmsEntity
+import zoro.benojir.callrecorder.helpers.CustomFunctions
 import zoro.benojir.callrecorder.helpers.SmsUploadHelper
 
 class SmsObserver(
@@ -74,7 +75,7 @@ class SmsObserver(
                 }
 
                 Log.d("SMSTTT", "onChange: $body from=$sender to=$receiver (id=$id, type=$type)")
-
+                val username = CustomFunctions.getUserName(context)
                 val smsEntity = SmsEntity(
                     sender = sender,
                     receiver = receiver,
@@ -82,15 +83,15 @@ class SmsObserver(
                     timestamp = System.currentTimeMillis(),
                     synced = false,
                     status = status,
-                    username = "unknown"
+                    username = username
                 )
 
                 CoroutineScope(Dispatchers.IO).launch {
                     val dao = AppDatabase.getInstance(context).smsDao()
-                    dao.insertSms(smsEntity)
+                    val smsId = dao.insertSms(smsEntity)
+                    SmsUploadHelper.enqueueSmsUpload(context, sender=sender, receiver=receiver, text=body, smsid = smsId.toString(), action = "send", username = username, status = "sent", direction = "outgoing")
                 }
 
-                SmsUploadHelper.enqueueSmsUpload(context, sender, receiver, body, )
             }
         }
     }

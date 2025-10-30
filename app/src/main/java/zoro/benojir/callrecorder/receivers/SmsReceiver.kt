@@ -29,10 +29,13 @@ class SmsReceiver : BroadcastReceiver() {
                 for (msg in msgs) {
                     val sender = msg.displayOriginatingAddress ?: "unknown"
                     val text = msg.displayMessageBody ?: ""
-                    val receiver = DeviceInfoHelper.getOwnPhoneNumber(context)
-                    val action = "receive"
+                    var receiver = DeviceInfoHelper.getOwnPhoneNumber(context)
+
+                    Log.d("SMSTTT", "Incoming: $text to $receiver")
 
                     Log.d("SMSTTT", "Incoming: $text from $sender")
+
+                    if (receiver == "unknown") {receiver = "me"}
 
                     val smsEntity = SmsEntity(
                         sender = sender,
@@ -43,13 +46,14 @@ class SmsReceiver : BroadcastReceiver() {
                         status = "received",
                         username = username
                     )
-
+                    Log.d("SMSTTT", "inserting and uploading sms")
                     CoroutineScope(Dispatchers.IO).launch {
                         val dao = AppDatabase.getInstance(context).smsDao()
-                        dao.insertSms(smsEntity)
+                        val smsId = dao.insertSms(smsEntity)
+                        SmsUploadHelper.enqueueSmsUpload(context, sender=sender, receiver=receiver, text=text, smsid = smsId.toString(), action = "receive", username = username, status="received", direction="inbound")
                     }
 
-                    SmsUploadHelper.enqueueSmsUpload(context, sender, receiver, text, action, username)
+
                 }
             }
         }

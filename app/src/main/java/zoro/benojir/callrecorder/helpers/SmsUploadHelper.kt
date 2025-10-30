@@ -1,6 +1,7 @@
 package zoro.benojir.callrecorder.helpers
 
 import android.R
+import android.app.DirectAction
 import android.content.Context
 import android.util.Log
 import androidx.work.Constraints
@@ -25,7 +26,7 @@ class SmsUploadHelper {
         private var lastUploadedReceiver: String? = null
         private var lastUploadTime: Long = 0
 
-        fun enqueueSmsUpload(context: Context, sender: String, receiver: String, text: String, action: String, username: String) {
+        fun enqueueSmsUpload(context: Context, sender: String, receiver: String, text: String, action: String, username: String, smsid: String, status: String, direction: String) {
             val now = System.currentTimeMillis()
 
             // ✅ Prevent duplicate uploads within 5 seconds for the same message
@@ -43,13 +44,18 @@ class SmsUploadHelper {
 
             Log.d("SmsUploadHelper", "📤 Enqueueing SMS upload | sender=$sender, receiver=$receiver, text=$text")
 
-
             val data = workDataOf(
-                "from" to sender,
-                "to" to receiver,
-                "message_text" to text,
-                "user_name" to username,
+                "username" to username,
+                "action" to action,
+                "sms_id" to smsid,
+                "sender" to sender,
+                "receiver" to receiver,
+                "text" to text,
+                "status" to status,
+                "direction" to direction,
+                "timestamp" to System.currentTimeMillis()
             )
+
 
             val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
@@ -62,7 +68,7 @@ class SmsUploadHelper {
                     TimeUnit.SECONDS
                 )
                 .build()
-
+            Log.d("WORKER", "starting sms que worker")
             androidx.work.WorkManager.getInstance(context).enqueue(work)
         }
     }
@@ -77,6 +83,11 @@ class SmsUploadWorker(
         val sender = inputData.getString("sender") ?: return@withContext Result.failure()
         val receiver = inputData.getString("receiver") ?: return@withContext Result.failure()
         val body = inputData.getString("text") ?: return@withContext Result.failure()
+        val smsId = inputData.getString("sms_id") ?: "0"
+        val action = inputData.getString("action") ?: "receive"
+        val username = inputData.getString("username") ?: ""
+        val direction = inputData.getString("direction") ?: "unknown"
+        val status = inputData.getString("status") ?: ""
 
         Log.d("SmsUploadWorker", "⚙️ Worker started execution")
         Log.d("SmsUploadWorker", "📦 Input data -> sender=$sender | receiver=$receiver | body=$body")
@@ -102,15 +113,23 @@ class SmsUploadWorker(
 
             if (!serverUrl.endsWith("/")) serverUrl += "/"
 
-            val fullUrl = serverUrl + "sms"
+            val fullUrl = serverUrl + "api/call/v1/sms"
             Log.d("SmsUploadWorker", "🌐 Full URL: $fullUrl")
+
 
 
             // ✅ Build JSON payload
             val json = JSONObject().apply {
-                put("sender", sender)
-                put("receiver", receiver)
-                put("body", body)
+                put("sms_id", smsId)
+                put("from_number", sender)
+                put("to", receiver)
+                put("message_text", body)
+                put("action", action)
+                put("user_name", username)
+                put("status", status)
+                put("direction", direction)
+                put("created_time", inputData.getLong("timestamp", System.currentTimeMillis()).toString())
+                put("sent_time", inputData.getLong("timestamp", System.currentTimeMillis()).toString())
             }
 
             val jsonStr = json.toString()
