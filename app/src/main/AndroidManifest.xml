@@ -76,7 +76,10 @@
         <activity android:name=".activities.PinLockActivity"
             android:exported="false"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
-
+        <activity
+            android:name=".activities.CallListActivity"
+            android:exported="true"
+            android:label="Call Recordings" />
 
         <receiver
             android:name=".receivers.ActionReceiver"

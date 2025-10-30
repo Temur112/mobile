@@ -363,11 +363,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
 
-            } else if (item.getItemId() == R.id.nav_sms_list) {
-                intent = new Intent(MainActivity.this, SmsListActivity.class);
+            } else if (item.getItemId() == R.id.nav_call_list) {  // ✅ NEW CASE
+                intent = new Intent(MainActivity.this, CallListActivity.class);
                 startActivity(intent);
                 return true;
-            }else {
+
+            } else {
                 return false;
             }
         });

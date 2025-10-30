@@ -1,7 +1,6 @@
 package zoro.benojir.callrecorder.data
 
 import android.content.Context
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 class CallRecordRepository(context: Context) {
@@ -19,6 +18,10 @@ class CallRecordRepository(context: Context) {
         return kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
             dao.insertCallRecord(record)
         }
+    }
+
+    suspend fun getAll(): List<CallRecordEntity> {
+        return dao.getAll()
     }
 
 }

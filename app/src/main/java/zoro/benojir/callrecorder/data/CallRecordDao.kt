@@ -14,4 +14,8 @@ interface CallRecordDao {
 
     @Query("UPDATE call_records SET synced = 1 WHERE id = :id")
     suspend fun markAsSynced(id: Long)
+
+    @Query("SELECT * FROM call_records ORDER BY startTime DESC")
+    suspend fun getAll(): List<CallRecordEntity>
+
 }

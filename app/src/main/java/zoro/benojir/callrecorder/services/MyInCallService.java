@@ -223,6 +223,15 @@ public class MyInCallService extends InCallService {
                 (scope, continuation) -> {
                     try {
                         CallRecordRepository repo = new CallRecordRepository(sContext);
+                        String fixedStatus = helper.getCallType();
+                        Log.d("METADATA", "🔁 Adjusted status");
+                        if ("outbound".equalsIgnoreCase(helper.getCallType())  && !"busy".equalsIgnoreCase(helper.getCallStatus()) && duration == 0L) {
+                            fixedStatus = "no_answer";
+                            Log.d("METADATA", "🔁 Adjusted status to 'no_answer' for outbound call with 0 duration." + helper.getCallStatus() + helper.getCallType());
+                            helper.setCallStatus(fixedStatus);
+                        }
+
+
                         CallRecordEntity entity = new CallRecordEntity(
                                 0,
                                 UUID.randomUUID().toString(),

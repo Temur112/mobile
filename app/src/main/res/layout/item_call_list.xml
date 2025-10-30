@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:layout_marginBottom="6dp"
+    android:background="?attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/tvPhoneNumber"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <!-- ✅ New Call ID line -->
+    <TextView
+        android:id="@+id/tvCallId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Call ID: 1234-5678-ABCD"
+        android:textSize="12sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="2dp" />
+
+    <TextView
+        android:id="@+id/tvCallType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="INBOUND"
+        android:textColor="@android:color/holo_blue_dark"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvCallStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="answered"
+        android:textColor="@android:color/holo_green_dark"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="45s"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tvStartTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="30 Oct 2025, 15:42"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tvFileStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🎙️ File Saved"
+        android:textSize="12sp"
+        android:textColor="@android:color/darker_gray" />
+</LinearLayout>

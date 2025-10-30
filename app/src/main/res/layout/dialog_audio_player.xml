@@ -27,7 +27,6 @@
         android:layout_height="wrap_content"
         android:maxWidth="220dp"
         android:contentDescription="Thumbnail"
-        android:src="@drawable/cat_listening_music"
         android:adjustViewBounds="true"
         android:layout_centerHorizontal="true"
         android:layout_below="@+id/fileNameTV"

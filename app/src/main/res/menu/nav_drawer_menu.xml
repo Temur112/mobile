@@ -3,13 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <item android:title="Feedback"
+    <item
+        android:title="History"
         tools:ignore="HardcodedText">
+
         <menu>
             <item
                 android:id="@+id/nav_sms_list"
                 android:title="SMS List"
-                android:icon="@android:drawable/ic_dialog_email"/>
+                android:icon="@android:drawable/ic_dialog_email" />
+
+            <item
+                android:id="@+id/nav_call_list"
+                android:title="Call Recordings"
+                android:icon="@drawable/update_24" />
         </menu>
     </item>
 </menu>

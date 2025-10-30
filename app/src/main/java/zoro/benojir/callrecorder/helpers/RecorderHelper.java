@@ -160,13 +160,18 @@ public class RecorderHelper {
         BuildersKt.launch(GlobalScope.INSTANCE, Dispatchers.getIO(), kotlinx.coroutines.CoroutineStart.DEFAULT, (scope, continuation) -> {
             try {
                 CallRecordRepository repo = new CallRecordRepository(context);
-
+                String fixedStatus = callStatus;
+                Log.d(TAG, "🔁 Adjusted status");
+                if ("outbound".equals(callType) && !("rejected".equalsIgnoreCase(callType)) && duration == 0L) {
+                    fixedStatus = "no_answer";
+                    Log.d(TAG, "🔁 Adjusted status to 'no_answer' for outbound call with 0 duration.");
+                }
                 CallRecordEntity entity = new CallRecordEntity(
                         0,
                         callId,
                         phoneNumber,
                         callType,
-                        callStatus,
+                        fixedStatus,
                         duration,
                         startTime,
                         endTime,
