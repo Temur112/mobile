@@ -36,7 +36,7 @@ class UploadRecordingWorker(
         }
 
         if (!serverUrl.endsWith("/")) serverUrl += "/"
-        val fullUrl = serverUrl + "voice"
+        val fullUrl = serverUrl + "api/call/v1/upload"
 
         val db = AppDatabase.getInstance(applicationContext)
         val unsyncedRecords = db.callRecordDao().getUnsyncedRecords()

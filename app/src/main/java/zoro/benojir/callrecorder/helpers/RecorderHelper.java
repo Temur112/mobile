@@ -193,11 +193,11 @@ public class RecorderHelper {
     // -------------------------------------------------------------------
 
     private String getFileName() {
-        String contactName = ContactsHelper.getContactNameByPhoneNumber(context, phoneNumber);
-        if (contactName == null || contactName.isEmpty()) contactName = "Unknown";
+//        String contactName = ContactsHelper.getContactNameByPhoneNumber(context, phoneNumber);
+//        if (contactName == null || contactName.isEmpty()) contactName = "Unknown";
+        String username = CustomFunctions.getUserName(context.getApplicationContext());
 
-        return contactName
-                + "_("
+        return callId+"_("
                 + phoneNumber
                 + ")_"
                 + DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime())
