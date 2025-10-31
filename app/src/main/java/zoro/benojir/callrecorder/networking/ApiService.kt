@@ -1,5 +1,6 @@
 package zoro.benojir.callrecorder.networking
 
+import android.R
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Field
@@ -9,12 +10,14 @@ import retrofit2.http.FormUrlEncoded
 
 data class LoginRequest(
     val username: String,
-    val password: String
+    val password: String,
+    val server: String
 )
 
 data class LoginResponse(
-    val status: String,
-    val token: String
+    val success: Boolean,
+    val api_key: String
+
 )
 
 
