@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 import zoro.benojir.callrecorder.adapters.CallListAdapter
 import zoro.benojir.callrecorder.data.CallListViewModel
 import zoro.benojir.callrecorder.databinding.ActivityCallListBinding
+import zoro.benojir.callrecorder.dialogs.AudioPlayerDialog
+import java.io.File
 
 class CallListActivity : AppCompatActivity() {
 
@@ -22,17 +24,17 @@ class CallListActivity : AppCompatActivity() {
         binding = ActivityCallListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 🔹 Setup toolbar
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        // Handle the toolbar back arrow
         binding.toolbar.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
 
-        // 🔹 Setup RecyclerView
-        adapter = CallListAdapter(emptyList())
+        // Adapter handles click on recordings
+        adapter = CallListAdapter(emptyList()) { file ->
+            playRecording(file)
+        }
+
         binding.recyclerViewCalls.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewCalls.adapter = adapter
 
@@ -45,9 +47,12 @@ class CallListActivity : AppCompatActivity() {
         viewModel.loadAllRecords()
     }
 
-    // 🔹 Handle physical Back button press
+    private fun playRecording(file: File) {
+        AudioPlayerDialog(this, file)
+    }
+
     override fun onBackPressed() {
         super.onBackPressed()
-        finish()  // ensures smooth exit to previous screen
+        finish()
     }
 }

@@ -1,15 +1,18 @@
 package zoro.benojir.callrecorder.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import zoro.benojir.callrecorder.data.CallRecordEntity
 import zoro.benojir.callrecorder.databinding.ItemCallListBinding
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
 class CallListAdapter(
-    private var callRecords: List<CallRecordEntity>
+    private var callRecords: List<CallRecordEntity>,
+    private val onPlayClicked: (File) -> Unit
 ) : RecyclerView.Adapter<CallListAdapter.CallViewHolder>() {
 
     inner class CallViewHolder(val binding: ItemCallListBinding) :
@@ -27,23 +30,35 @@ class CallListAdapter(
 
         holder.binding.apply {
             tvPhoneNumber.text = record.phoneNumber
-
-            // 🧭 Call type: inbound/outbound
             tvCallType.text = record.callType.uppercase(Locale.getDefault())
-
-            // 🟢 Status: answered / busy / no_answer / failed
             tvCallStatus.text = record.callStatus
-
-            // ⏱ Duration
             tvDuration.text = "${record.duration}s"
-
-            // 🕓 Start time
             tvStartTime.text = formatter.format(Date(record.startTime))
-
-            // 🎙️ File presence
-            tvFileStatus.text = if (record.filePath.isNotEmpty()) "🎙️ File Saved" else "❌ No File"
-
             tvCallId.text = "Call ID: ${record.callId}"
+
+            val fileExists = record.filePath.isNotEmpty() && File(record.filePath).exists()
+
+            if (fileExists) {
+                tvFileStatus.text = "🎙️ File Saved"
+                root.isEnabled = true
+                root.alpha = 1.0f
+
+                // 🟢 Add this UI enhancement snippet here:
+                tvFileStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50")) // green
+
+                root.setOnClickListener {
+                    onPlayClicked(File(record.filePath))
+                }
+            } else {
+                tvFileStatus.text = "❌ No File"
+                root.isEnabled = false
+                root.alpha = 0.5f
+
+                // 🔴 Add this part here too:
+                tvFileStatus.setTextColor(android.graphics.Color.parseColor("#B0B0B0")) // gray
+
+                root.setOnClickListener(null)
+            }
         }
     }
 
