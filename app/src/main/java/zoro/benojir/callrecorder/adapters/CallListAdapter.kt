@@ -39,24 +39,22 @@ class CallListAdapter(
             val fileExists = record.filePath.isNotEmpty() && File(record.filePath).exists()
 
             if (fileExists) {
-                tvFileStatus.text = "🎙️ File Saved"
+                tvFileStatus.text = "🎧 Tap to play recording"
+                tvFileStatus.setTextColor(android.graphics.Color.parseColor("#2E7D32")) // dark green
+                btnPlay.visibility = View.VISIBLE
                 root.isEnabled = true
                 root.alpha = 1.0f
-
-                // 🟢 Add this UI enhancement snippet here:
-                tvFileStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50")) // green
 
                 root.setOnClickListener {
                     onPlayClicked(File(record.filePath))
                 }
+
             } else {
-                tvFileStatus.text = "❌ No File"
+                tvFileStatus.text = "🚫 No recording available"
+                tvFileStatus.setTextColor(android.graphics.Color.parseColor("#9E9E9E")) // gray
+                btnPlay.visibility = View.GONE
                 root.isEnabled = false
-                root.alpha = 0.5f
-
-                // 🔴 Add this part here too:
-                tvFileStatus.setTextColor(android.graphics.Color.parseColor("#B0B0B0")) // gray
-
+                root.alpha = 0.8f
                 root.setOnClickListener(null)
             }
         }

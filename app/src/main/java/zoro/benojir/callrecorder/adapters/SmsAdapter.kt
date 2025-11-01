@@ -31,16 +31,15 @@ class SmsAdapter : ListAdapter<SmsEntity, SmsAdapter.SmsViewHolder>(DiffCallback
         private val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
         fun bind(sms: SmsEntity) {
-            val displayReceiver = if (sms.receiver.equals("unknown", true) || sms.receiver.isBlank()) "me" else sms.receiver
+            val context = itemView.context
 
-            // Determine direction visually
             val isOutgoing = sms.sender.equals("me", true) || sms.status.equals("sent", true)
-            val arrow = if (isOutgoing) "➡️" else "⬅️"
+            val directionArrow = if (isOutgoing) "➡️" else "⬅️"
 
             val fromTo = if (isOutgoing) {
-                "$arrow  From: ${sms.sender}  →  To: $displayReceiver"
+                "$directionArrow From: ${sms.sender} → To: ${sms.receiver}"
             } else {
-                "$arrow  From: ${sms.sender}  →  To: me"
+                "$directionArrow From: ${sms.sender} → To: me"
             }
 
             textFromTo.text = fromTo
@@ -50,11 +49,13 @@ class SmsAdapter : ListAdapter<SmsEntity, SmsAdapter.SmsViewHolder>(DiffCallback
             val syncStatus = if (sms.synced) "Synced ✅" else "Pending ❌"
             textMeta.text = "Time: $timeStr | User: ${sms.username} | $syncStatus"
 
-            // Optional: color coding
-            if (isOutgoing) {
-                textFromTo.setTextColor(itemView.context.getColor(android.R.color.holo_blue_dark))
+            // ✅ Green if synced, ❌ Red if pending
+            if (sms.synced) {
+                itemView.isEnabled = true
+                textFromTo.setTextColor(context.getColor(android.R.color.holo_green_dark))
             } else {
-                textFromTo.setTextColor(itemView.context.getColor(android.R.color.holo_green_dark))
+                itemView.isEnabled = false
+                textFromTo.setTextColor(context.getColor(android.R.color.holo_red_dark))
             }
         }
     }
