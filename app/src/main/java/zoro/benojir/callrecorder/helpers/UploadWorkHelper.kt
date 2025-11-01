@@ -1,6 +1,7 @@
 package zoro.benojir.callrecorder.helpers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.*
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -8,9 +9,9 @@ import java.util.concurrent.TimeUnit
 object UploadWorkHelper {
 
     fun enqueueVoiceUpload(context: Context, filePath: String) {
-        val fileName = File(filePath).nameWithoutExtension
-        val uniqueWorkName = "upload_$fileName" // ensures one upload per file
-
+        val fileName = if (filePath.isNotEmpty()) File(filePath).nameWithoutExtension else System.currentTimeMillis().toString()
+        val uniqueWorkName = "upload_$fileName"
+        Log.d("uppp", "Upload worker check")
         val uploadRequest = OneTimeWorkRequestBuilder<UploadRecordingWorker>()
             .setInputData(workDataOf("file_path" to filePath))
             .setConstraints(
@@ -19,11 +20,11 @@ object UploadWorkHelper {
                     .build()
             )
             .setBackoffCriteria(
-                BackoffPolicy.EXPONENTIAL,
+                BackoffPolicy.LINEAR,
                 10, TimeUnit.SECONDS
             )
             .build()
-
+        Log.d("uppp", "Upload worker check after build")
         // 👇 ensures only one upload per file (prevents duplicates)
         WorkManager.getInstance(context).enqueueUniqueWork(
             uniqueWorkName,

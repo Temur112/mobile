@@ -10,14 +10,11 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DeviceInfoHelper {
 
-    public static List<String> getOwnPhoneNumbers(Context context) {
-        List<String> numbers = new ArrayList<>();
-
+    public static String getOwnPhoneNumber(Context context) {
         try {
             TelephonyManager telephonyManager =
                     (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -26,47 +23,41 @@ public class DeviceInfoHelper {
                     != PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
                             != PackageManager.PERMISSION_GRANTED) {
-
-                Log.w("DeviceInfoHelper", "⚠️ Missing READ_PHONE_NUMBERS permission");
-                numbers.add("Permission not granted");
-                return numbers;
+                Log.w("DeviceInfoHelper", "⚠️ Missing READ_PHONE_NUMBERS or READ_PHONE_STATE permission");
+                return "permission_denied";
             }
 
-            // ✅ Try basic method first
-            String mainNumber = telephonyManager.getLine1Number();
-            if (mainNumber != null && !mainNumber.isEmpty()) {
-                numbers.add(mainNumber);
+            // ✅ 1. Try TelephonyManager first
+            String number = telephonyManager.getLine1Number();
+            if (number != null && !number.trim().isEmpty()) {
+                Log.d("DeviceInfoHelper", "✅ Found number via TelephonyManager: " + number);
+                return number;
             }
 
-            // ✅ Try to fetch all SIMs (dual SIM, etc.)
-            SubscriptionManager sm = (SubscriptionManager) context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+            // ✅ 2. Try SubscriptionManager (for dual SIM support)
+            SubscriptionManager sm = (SubscriptionManager)
+                    context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+
             if (sm != null) {
                 List<SubscriptionInfo> subs = sm.getActiveSubscriptionInfoList();
                 if (subs != null && !subs.isEmpty()) {
                     for (SubscriptionInfo sub : subs) {
-                        String number = sub.getNumber();
-                        String carrier = sub.getCarrierName() != null ? sub.getCarrierName().toString() : "Unknown carrier";
-                        int simSlot = sub.getSimSlotIndex();
-
-                        if (number == null || number.isEmpty()) {
-                            number = "(no number stored on SIM)";
+                        String simNumber = sub.getNumber();
+                        if (simNumber != null && !simNumber.trim().isEmpty()) {
+                            Log.d("DeviceInfoHelper", "✅ Found number via SIM: " + simNumber);
+                            return simNumber;
                         }
-
-                        numbers.add("SIM " + (simSlot + 1) + " (" + carrier + "): " + number);
                     }
                 }
             }
 
-            if (numbers.isEmpty()) {
-                numbers.add("No SIM numbers available");
-            }
-
-            return numbers;
+            // ✅ 3. If no number found
+            Log.w("DeviceInfoHelper", "⚠️ No phone number found on any SIM");
+            return "unknown";
 
         } catch (Exception e) {
             Log.e("DeviceInfoHelper", "❌ Failed to get device number", e);
-            numbers.add("Error: " + e.getMessage());
-            return numbers;
+            return "error";
         }
     }
 }

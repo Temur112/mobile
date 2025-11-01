@@ -57,6 +57,14 @@ class CallListAdapter(
                 root.alpha = 0.8f
                 root.setOnClickListener(null)
             }
+
+            if (record.synced) {
+                tvSyncStatus.text = "✅ Synced"
+                tvSyncStatus.setTextColor(holder.itemView.context.getColor(android.R.color.holo_green_dark))
+            } else {
+                tvSyncStatus.text = "🔄 Sync Pending"
+                tvSyncStatus.setTextColor(holder.itemView.context.getColor(android.R.color.holo_orange_dark))
+            }
         }
     }
 

@@ -35,7 +35,7 @@ class SmsReceiver : BroadcastReceiver() {
 
                     Log.d("SMSTTT", "Incoming: $text from $sender")
 
-                    if (receiver == "unknown") {receiver = "me"}
+                    if (receiver == "Unknown") {receiver = "me"}
 
                     val smsEntity = SmsEntity(
                         sender = sender,

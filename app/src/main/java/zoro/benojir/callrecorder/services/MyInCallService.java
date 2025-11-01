@@ -213,9 +213,23 @@ public class MyInCallService extends InCallService {
 
     // ----------------------------------------------------------
     // 💾 Save metadata when no recording exists
+
+    private static long lastSaveTime = 0;  // ✅ static → persists between calls
+    private static String lastSavedNumber = "";
     private void saveMetadataOnly(RecorderHelper helper, long duration, long start, long end) {
         Log.d("MyInCallService", "🟡 saveMetadataOnly() triggered for " + helper.getPhoneNumber());
+        long now = System.currentTimeMillis();
+        String number = helper.getPhoneNumber();
 
+        // 🛑 Skip if another save happened < 2 seconds ago for same number
+        if (number != null && number.equals(lastSavedNumber) && (now - lastSaveTime) < 2000) {
+            Log.w("MyInCallService", "⚠️ Skipping duplicate metadata save for " + number);
+            return;
+        }
+
+        // ✅ Update last save state
+        lastSaveTime = now;
+        lastSavedNumber = number;
         BuildersKt.launch(
                 GlobalScope.INSTANCE,
                 Dispatchers.getIO(),

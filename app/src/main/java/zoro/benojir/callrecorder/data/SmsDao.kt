@@ -19,4 +19,7 @@ interface SmsDao {
 
     @Query("UPDATE sms SET synced = :isSynced WHERE receiver = :receiver AND text = :body")
     suspend fun updateSyncedStatus(receiver: String, body: String, isSynced: Boolean)
+
+    @Query("DELETE FROM sms WHERE timestamp < :threshold")
+    suspend fun deleteOlderThan(threshold: Long): Int
 }

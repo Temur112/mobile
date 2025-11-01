@@ -120,16 +120,15 @@ class SmsUploadWorker(
 
             // ✅ Build JSON payload
             val json = JSONObject().apply {
+                put("api_key", token)
                 put("sms_id", smsId)
                 put("from_number", sender)
                 put("to", receiver)
                 put("message_text", body)
-                put("action", action)
                 put("user_name", username)
                 put("status", status)
                 put("direction", direction)
                 put("created_time", inputData.getLong("timestamp", System.currentTimeMillis()).toString())
-                put("sent_time", inputData.getLong("timestamp", System.currentTimeMillis()).toString())
             }
 
             val jsonStr = json.toString()

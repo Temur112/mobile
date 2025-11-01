@@ -1,11 +1,15 @@
 package zoro.benojir.callrecorder.helpers
 
 import android.content.Context
+import android.util.Base64
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import zoro.benojir.callrecorder.data.AppDatabase
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -18,17 +22,11 @@ class UploadRecordingWorker(
     private val TAG = "UploadRecordingWorker"
 
     override suspend fun doWork(): Result {
-        Log.d(TAG, "🚀 Worker started!") // 🟢 1️⃣ Top-level start
-
-        val filePath = inputData.getString("file_path") ?: ""
-        Log.d(TAG, "📁 Received filePath='$filePath'") // 🟢 2️⃣ See what data was passed
-
-        val hasFile = filePath.isNotEmpty() && File(filePath).exists()
-        val file = if (hasFile) File(filePath) else null
+        Log.d(TAG, "🚀 Worker started!")
 
         val token = CustomFunctions.getToken(applicationContext)
         var serverUrl = CustomFunctions.getServerUrl(applicationContext)
-        Log.d(TAG, "🔑 Token exists=${!token.isNullOrEmpty()}, ServerUrl=$serverUrl") // 🟢 3️⃣ Confirm setup
+        val username = "admin"  // or dynamically loaded from preferences
 
         if (token.isNullOrEmpty() || serverUrl.isNullOrEmpty()) {
             Log.e(TAG, "❌ Missing token or server URL")
@@ -40,8 +38,7 @@ class UploadRecordingWorker(
 
         val db = AppDatabase.getInstance(applicationContext)
         val unsyncedRecords = db.callRecordDao().getUnsyncedRecords()
-
-        Log.d(TAG, "📦 Found ${unsyncedRecords.size} unsynced records") // 🟢 4️⃣ Check if DB actually has items
+        Log.d(TAG, "📦 Found ${unsyncedRecords.size} unsynced records")
 
         if (unsyncedRecords.isEmpty()) {
             Log.d(TAG, "📭 No unsynced call records.")
@@ -54,40 +51,55 @@ class UploadRecordingWorker(
             .build()
 
         for (record in unsyncedRecords) {
-            val recordHasFile = record.filePath.isNotEmpty() && File(record.filePath).exists()
-            val recordFile = if (recordHasFile) File(record.filePath) else null
-
-            Log.d(TAG, "🧾 Preparing record: id=${record.id}, call_id=${record.callId}, hasFile=$recordHasFile, status=${record.callStatus}")
-
-            val builder = MultipartBody.Builder().setType(MultipartBody.FORM)
-
-            if (recordHasFile && recordFile != null) {
-                builder.addFormDataPart(
-                    "file",
-                    recordFile.name,
-                    RequestBody.create("audio/m4a".toMediaTypeOrNull(), recordFile)
-                )
-            }
-
-            builder
-                .addFormDataPart("call_id", record.callId)
-                .addFormDataPart("call_type", record.callType)
-                .addFormDataPart("call_status", record.callStatus)
-                .addFormDataPart("to", record.phoneNumber)
-                .addFormDataPart("duration", record.duration.toString())
-                .addFormDataPart("start_time", record.startTime.toString())
-                .addFormDataPart("end_time", record.endTime.toString())
-
-            val requestBody = builder.build()
-
-            val request = Request.Builder()
-                .url(fullUrl)
-                .addHeader("Authorization", "Bearer $token")
-                .post(requestBody)
-                .build()
-
             try {
-                Log.d(TAG, "📤 Uploading: ${record.callStatus} | file=${record.filePath}")
+                Log.d(TAG, "🧾 Preparing record: id=${record.id}, call_id=${record.callId}, status=${record.callStatus}")
+
+                val file = File(record.filePath)
+                val hasFile = file.exists() && file.isFile
+
+                var audioBase64: String? = null
+                if (hasFile) {
+                    val bytes = file.readBytes()
+                    audioBase64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+                }
+
+
+                var receiver = ""
+                var sender = ""
+
+                if (record.callType.lowercase() == "inbound"){
+                    receiver = "me"
+                    sender = record.phoneNumber
+                }else{
+                    receiver = record.phoneNumber
+                    sender = "me"
+                }
+
+
+                val json = JSONObject().apply {
+                    put("user_name", username)
+                    put("api_key", token)
+                    put("call_id", record.callId)
+                    put("call_type", record.callType)
+                    put("call_status", record.callStatus)
+                    put("from", sender)
+                    put("to", receiver)
+                    put("duration", record.duration)
+                    put("start_time", record.startTime.toString())
+                    put("end_time", record.endTime.toString())
+                    put("audio_filename", if (hasFile) file.name else "none")
+                    put("audio_file", audioBase64 ?: JSONObject.NULL)
+                }
+
+                val body = json.toString().toRequestBody("application/json".toMediaType())
+
+                val request = Request.Builder()
+                    .url(fullUrl)
+                    .post(body)
+                    .addHeader("Content-Type", "application/json")
+                    .build()
+
+                Log.d(TAG, "📤 Uploading call ${record.callId}")
                 val response = client.newCall(request).execute()
                 val responseText = response.body?.string() ?: ""
 
@@ -95,12 +107,9 @@ class UploadRecordingWorker(
 
                 if (response.isSuccessful) {
                     db.callRecordDao().markAsSynced(record.id)
-                    Log.i(
-                        TAG,
-                        "✅ Uploaded & synced record: ${record.callId} (${record.callStatus})"
-                    )
+                    Log.i(TAG, "✅ Uploaded & synced record: ${record.callId}")
                 } else {
-                    Log.w(TAG, "⚠️ Upload failed (code ${response.code}) for ${record.callId}")
+                    Log.w(TAG, "⚠️ Upload failed (${response.code}) for ${record.callId}")
                     return Result.retry()
                 }
 
