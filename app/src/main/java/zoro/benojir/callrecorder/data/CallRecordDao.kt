@@ -7,7 +7,7 @@ import androidx.room.Query
 
 @Dao
 interface CallRecordDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCallRecord(record: CallRecordEntity): Long
 
     @Query("SELECT * FROM call_records WHERE synced = 0")

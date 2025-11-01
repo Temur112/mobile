@@ -17,6 +17,7 @@ import androidx.preference.PreferenceManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.WeakHashMap;
 
 import kotlinx.coroutines.BuildersKt;
 import kotlinx.coroutines.CoroutineStart;
@@ -34,6 +35,8 @@ public class MyInCallService extends InCallService {
     private final Map<Call, RecorderHelper> activeRecorders = new HashMap<>();
     private final Map<Call, Long> callStartTimes = new HashMap<>();
     private Context sContext;
+    private final Map<Call, Boolean> handledCalls = new WeakHashMap<>();
+
 
     @Override
     public void onCallAdded(Call call) {
@@ -63,48 +66,71 @@ public class MyInCallService extends InCallService {
                         break;
 
                     case Call.STATE_DISCONNECTED:
+                        Log.d("MyInCallService", "Call ended (DISCONNECTED)");
+                        handleCallEndOnce(call);
+                        break;
+
                     case Call.STATE_DISCONNECTING:
-                        Log.d("MyInCallService", "Call ended");
-
-                        // 🧠 Determine whether call was ever active (answered)
-                        boolean wasAnswered = (RecorderHelper.recorder != null);
-                        RecorderHelper helper = activeRecorders.remove(call);
-
-                        if (helper == null) {
-                            // ✅ No helper created — create one to save metadata
-                            String number = call.getDetails().getHandle().getSchemeSpecificPart();
-                            helper = new RecorderHelper(sContext, number);
-                            boolean isIncoming = (call.getDetails().getCallDirection() == Call.Details.DIRECTION_INCOMING);
-                            helper.setCallType(isIncoming ? "inbound" : "outbound");
-                        }
-
-                        // 🧭 Determine status from cause
-                        int cause = call.getDetails().getDisconnectCause().getCode();
-                        String status = mapDisconnectCauseToStatus(cause);
-                        helper.setCallStatus(status);
-
-                        if (wasAnswered) {
-                            Log.d("MyInCallService", "🎙️ Answered call ended → stopping recording");
-                            helper.stopVoiceRecoding();
-                        } else {
-                            Log.d("MyInCallService", "🟡 Missed/rejected/unanswered call → saving metadata only");
-                            saveMetadataOnly(helper, 0, System.currentTimeMillis(), System.currentTimeMillis());
-                        }
-
-                        if (activeRecorders.isEmpty()) {
-                            stopForeground(true);
-                            Log.d("MyInCallService", "🟢 Foreground service stopped (no active recorders).");
-                        }
+                        Log.d("MyInCallService", "Ignoring DISCONNECTING (handled by DISCONNECTED)");
                         break;
                 }
             }
         });
     }
 
+
+    private void handleCallEndOnce(Call call) {
+        if (handledCalls.containsKey(call)) {
+            Log.w("MyInCallService", "⚠️ Call end already handled for this call.");
+            return;
+        }
+        handledCalls.put(call, true);
+
+        boolean wasAnswered = (RecorderHelper.recorder != null);
+        RecorderHelper helper = activeRecorders.remove(call);
+
+        if (helper == null) {
+            String number = call.getDetails().getHandle().getSchemeSpecificPart();
+            helper = new RecorderHelper(sContext, number);
+            boolean isIncoming = (call.getDetails().getCallDirection() == Call.Details.DIRECTION_INCOMING);
+            helper.setCallType(isIncoming ? "inbound" : "outbound");
+        }
+
+        int cause = call.getDetails().getDisconnectCause().getCode();
+        String status = mapDisconnectCauseToStatus(cause);
+        helper.setCallStatus(status);
+
+        if (wasAnswered) {
+            Log.d("MyInCallService", "🎙️ Answered call ended → stopping recording");
+            helper.stopVoiceRecoding();
+        } else {
+            Log.d("MyInCallService", "🟡 Missed/rejected/unanswered call → saving metadata only");
+            saveMetadataOnly(helper, 0, System.currentTimeMillis(), System.currentTimeMillis());
+        }
+
+        if (activeRecorders.isEmpty()) {
+            stopForeground(true);
+            Log.d("MyInCallService", "🟢 Foreground service stopped (no active recorders).");
+        }
+    }
     @Override
     public void onCallRemoved(Call call) {
         super.onCallRemoved(call);
-        handleCallEnd(call);
+
+        // 🧠 If this call was already processed in STATE_DISCONNECTED, skip it
+        if (handledCalls.containsKey(call)) {
+            Log.w("MyInCallService", "⚠️ onCallRemoved() skipped (already handled).");
+        } else {
+            handledCalls.put(call, true);
+            handleCallEnd(call);
+        }
+
+        // 🧹 Clean up all maps to prevent memory leaks
+        activeRecorders.remove(call);
+        callStartTimes.remove(call);
+        handledCalls.remove(call);
+
+        Log.d("MyInCallService", "🧹 Cleaned up call from maps after removal: " + call);
     }
 
     // ----------------------------------------------------------
