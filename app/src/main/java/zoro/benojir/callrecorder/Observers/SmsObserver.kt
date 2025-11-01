@@ -89,7 +89,7 @@ class SmsObserver(
                 CoroutineScope(Dispatchers.IO).launch {
                     val dao = AppDatabase.getInstance(context).smsDao()
                     val smsId = dao.insertSms(smsEntity)
-                    SmsUploadHelper.enqueueSmsUpload(context, sender=sender, receiver=receiver, text=body, smsid = smsId.toString(), action = "send", username = username, status = "sent", direction = "outgoing")
+                    SmsUploadHelper.enqueueSmsUpload(context, sender=sender, receiver=receiver, text=body, smsid = smsId.toString(), action = "sent", username = username, status = "delivered", direction = "outgoing")
                 }
 
             }

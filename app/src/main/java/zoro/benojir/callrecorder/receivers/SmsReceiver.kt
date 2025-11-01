@@ -50,7 +50,7 @@ class SmsReceiver : BroadcastReceiver() {
                     CoroutineScope(Dispatchers.IO).launch {
                         val dao = AppDatabase.getInstance(context).smsDao()
                         val smsId = dao.insertSms(smsEntity)
-                        SmsUploadHelper.enqueueSmsUpload(context, sender=sender, receiver=receiver, text=text, smsid = smsId.toString(), action = "receive", username = username, status="received", direction="inbound")
+                        SmsUploadHelper.enqueueSmsUpload(context, sender=sender, receiver=receiver, text=text, smsid = smsId.toString(), action = "receive", username = username, status="delivered", direction="incoming")
                     }
 
 

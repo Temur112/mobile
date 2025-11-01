@@ -19,6 +19,9 @@ import org.json.JSONObject
 import zoro.benojir.callrecorder.data.AppDatabase
 import java.util.concurrent.TimeUnit
 import zoro.benojir.callrecorder.helpers.CustomFunctions
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class SmsUploadHelper {
     companion object {
@@ -117,18 +120,27 @@ class SmsUploadWorker(
             Log.d("SmsUploadWorker", "🌐 Full URL: $fullUrl")
 
 
+            val formattedTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .format(Date(inputData.getLong("timestamp", System.currentTimeMillis())))
+
 
             // ✅ Build JSON payload
             val json = JSONObject().apply {
                 put("api_key", token)
                 put("sms_id", smsId)
                 put("from_number", sender)
-                put("to", receiver)
+                if (receiver.lowercase().equals("unknown")) {
+                    put("to", sender)
+                }else{
+                    put("to", receiver)
+                }
                 put("message_text", body)
                 put("user_name", username)
-                put("status", status)
                 put("direction", direction)
-                put("created_time", inputData.getLong("timestamp", System.currentTimeMillis()).toString())
+                put("created_time", formattedTime)
+                put("status", status)
+                // ✅ Only include status if direction is NOT incoming
+
             }
 
             val jsonStr = json.toString()

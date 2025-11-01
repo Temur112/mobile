@@ -12,6 +12,9 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import zoro.benojir.callrecorder.data.AppDatabase
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class UploadRecordingWorker(
@@ -26,7 +29,7 @@ class UploadRecordingWorker(
 
         val token = CustomFunctions.getToken(applicationContext)
         var serverUrl = CustomFunctions.getServerUrl(applicationContext)
-        val username = "admin"  // or dynamically loaded from preferences
+        val username = CustomFunctions.getUserName(applicationContext)  // or dynamically loaded from preferences
 
         if (token.isNullOrEmpty() || serverUrl.isNullOrEmpty()) {
             Log.e(TAG, "❌ Missing token or server URL")
@@ -68,31 +71,42 @@ class UploadRecordingWorker(
                 var sender = ""
 
                 if (record.callType.lowercase() == "inbound"){
-                    receiver = "me"
+                    receiver = record.phoneNumber
                     sender = record.phoneNumber
                 }else{
                     receiver = record.phoneNumber
-                    sender = "me"
+                    sender = record.phoneNumber
                 }
 
+                val formattedStartTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                    .format(Date(record.startTime))
+
+                val formattedEndTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                    .format(Date(record.endTime))
+
+                val correctStatus = if (record.callStatus.toString().lowercase() == "rejected") {
+                    "no_answer"
+                } else {
+                    record.callStatus.toString().lowercase()
+                }
 
                 val json = JSONObject().apply {
                     put("user_name", username)
                     put("api_key", token)
-                    put("call_id", record.callId)
+                    put("call_id", record.id)
                     put("call_type", record.callType)
-                    put("call_status", record.callStatus)
+                    put("call_status", correctStatus)
                     put("from", sender)
                     put("to", receiver)
                     put("duration", record.duration)
-                    put("start_time", record.startTime.toString())
-                    put("end_time", record.endTime.toString())
+                    put("start_time", formattedStartTime)
+                    put("end_time", formattedEndTime)
                     put("audio_filename", if (hasFile) file.name else "none")
                     put("audio_file", audioBase64 ?: JSONObject.NULL)
                 }
 
                 val body = json.toString().toRequestBody("application/json".toMediaType())
-
+                Log.d("DATA", "the voice upload body $json")
                 val request = Request.Builder()
                     .url(fullUrl)
                     .post(body)
